@@ -70,6 +70,10 @@ public class TaskService {
         taskRepository.deleteById(id);
     }
 
+    public void deleteAllTasks() {
+        taskRepository.deleteAll();
+    }
+
     private TaskDTO convertToDTO(Task task) {
         TaskDTO taskDTO = new TaskDTO();
         taskDTO.setId(task.getId());
