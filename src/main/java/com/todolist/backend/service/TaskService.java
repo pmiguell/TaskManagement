@@ -21,6 +21,15 @@ public class TaskService {
         return taskRepository.findAll();
     }
 
+    public List<Task> getFilteredTasks(String category, Status status, LocalDate deadline, String description) {
+        return taskRepository.findAll().stream()
+                .filter(task -> (category == null || task.getCategory().equalsIgnoreCase(category)))
+                .filter(task -> (status == null || task.getStatus() == status))
+                .filter(task -> (deadline == null || task.getDeadline().isEqual(deadline)))
+                .filter(task -> (description == null || task.getDescription().toLowerCase().contains(description.toLowerCase())))
+                .toList();
+    }
+
     public Task createTask(Task task) {
         task.setStatus(TaskUtils.calculateStatus(task.getDeadline()));
 
@@ -48,7 +57,4 @@ public class TaskService {
         taskRepository.deleteById(id);
     }
 
-    public List<Task> searchTasks(String description, String category, Status status, LocalDate deadline) {
-        return taskRepository.findByDescriptionContainingAndCategoryContainingAndStatusAndDeadline(description, category, status, deadline);
-    }
 }

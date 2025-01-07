@@ -21,12 +21,17 @@ public class TaskController {
         return taskService.getAllTasks();
     }
 
-    @GetMapping("/search")
-    public List<Task> searchTasks(@RequestParam(required = false) String description,
-                                  @RequestParam(required = false) String category,
-                                  @RequestParam(required = false) Status status,
-                                  @RequestParam(required = false) LocalDate deadline) {
-        return taskService.searchTasks(description, category, status, deadline);
+    @GetMapping("/filter")
+    public List<Task> getFilteredTasks(
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) Status status,
+            @RequestParam(required = false) LocalDate deadline,
+            @RequestParam(required = false) String description) {
+
+        category = (category != null && category.isEmpty()) ? null : category;
+        description = (description != null && description.isEmpty()) ? null : description;
+
+        return taskService.getFilteredTasks(category, status, deadline, description);
     }
 
     @PostMapping
