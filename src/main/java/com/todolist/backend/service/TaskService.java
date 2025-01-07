@@ -1,5 +1,6 @@
 package com.todolist.backend.service;
 
+import com.todolist.backend.DTO.TaskDTO;
 import com.todolist.backend.exception.TaskNotFoundException;
 import com.todolist.backend.model.Task;
 import com.todolist.backend.repository.TaskRepository;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class TaskService {
@@ -20,42 +22,70 @@ public class TaskService {
         this.taskRepository = taskRepository;
     }
 
-    public List<Task> getAllTasks() {
-        return taskRepository.findAll();
+    public List<TaskDTO> getAllTasks() {
+        return taskRepository.findAll().stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
-    public List<Task> getFilteredTasks(String category, Status status, LocalDate deadline, String description) {
-        return taskRepository.findFilteredTasks(category, status, deadline, description);
+    public List<TaskDTO> getFilteredTasks(String category, Status status, LocalDate deadline, String description) {
+        return taskRepository.findFilteredTasks(category, status, deadline, description).stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
 
-    public Task createTask(Task task) {
+    public TaskDTO createTask(TaskDTO taskDTO) {
+        Task task = convertToEntity(taskDTO);
         task.setStatus(TaskUtils.calculateStatus(task.getDeadline()));
+        Task savedTask = taskRepository.save(task);
 
-        return taskRepository.save(task);
+        return convertToDTO(savedTask);
     }
 
-    public Task updateTask(Integer id, Task taskDetails) {
+    public TaskDTO updateTask(Integer id, TaskDTO taskDTODetails) {
         Task existingTask = taskRepository.findById(id).orElseThrow(() -> new TaskNotFoundException("Task not found"));
 
-        existingTask.setDescription(taskDetails.getDescription());
-        existingTask.setCategory(taskDetails.getCategory());
-        existingTask.setDeadline(taskDetails.getDeadline());
-        existingTask.setStatus(TaskUtils.calculateStatus(taskDetails.getDeadline()));
+        existingTask.setDescription(taskDTODetails.getDescription());
+        existingTask.setCategory(taskDTODetails.getCategory());
+        existingTask.setDeadline(taskDTODetails.getDeadline());
+        existingTask.setStatus(TaskUtils.calculateStatus(taskDTODetails.getDeadline()));
 
-        return taskRepository.save(existingTask);
+        Task updatedTask = taskRepository.save(existingTask);
+
+        return convertToDTO(updatedTask);
     }
 
-    public Task concludeTask(Integer id) {
+    public TaskDTO concludeTask(Integer id) {
         Task existingTask = taskRepository.findById(id).orElseThrow(() -> new TaskNotFoundException("Task not found"));
 
         existingTask.setStatus(Status.CONCLUIDA);
 
-        return taskRepository.save(existingTask);
+        Task concludedTask = taskRepository.save(existingTask);
+
+        return convertToDTO(concludedTask);
     }
 
     public void deleteTask(Integer id) {
         taskRepository.deleteById(id);
     }
 
+    private TaskDTO convertToDTO(Task task) {
+        TaskDTO taskDTO = new TaskDTO();
+        taskDTO.setId(task.getId());
+        taskDTO.setDescription(task.getDescription());
+        taskDTO.setCategory(task.getCategory());
+        taskDTO.setDeadline(task.getDeadline());
+        taskDTO.setStatus(task.getStatus());
+        return taskDTO;
+    }
+
+    private Task convertToEntity(TaskDTO taskDTO) {
+        Task task = new Task();
+        task.setDescription(taskDTO.getDescription());
+        task.setCategory(taskDTO.getCategory());
+        task.setDeadline(taskDTO.getDeadline());
+        task.setStatus(taskDTO.getStatus());
+        return task;
+    }
 }

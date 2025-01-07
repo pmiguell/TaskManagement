@@ -1,5 +1,6 @@
 package com.todolist.backend.controller;
 
+import com.todolist.backend.DTO.TaskDTO;
 import com.todolist.backend.model.Task;
 import com.todolist.backend.service.TaskService;
 import com.todolist.backend.utils.Status;
@@ -23,12 +24,12 @@ public class TaskController {
     }
 
     @GetMapping
-    public List<Task> getAllTasks() {
+    public List<TaskDTO> getAllTasks() {
         return taskService.getAllTasks();
     }
 
     @GetMapping("/filter")
-    public List<Task> getFilteredTasks(
+    public List<TaskDTO> getFilteredTasks(
             @RequestParam(required = false) String category,
             @RequestParam(required = false) Status status,
             @RequestParam(required = false) LocalDate deadline,
@@ -38,20 +39,20 @@ public class TaskController {
     }
 
     @PostMapping
-    public ResponseEntity<Task> createTask(@RequestBody Task task) {
-        Task createdTask = taskService.createTask(task);
+    public ResponseEntity<TaskDTO> createTask(@RequestBody TaskDTO taskDTO) {
+        TaskDTO createdTask = taskService.createTask(taskDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdTask);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Task> updateTask(@PathVariable Integer id, @RequestBody Task taskDetails) {
-        Task updatedTask = taskService.updateTask(id, taskDetails);
+    public ResponseEntity<TaskDTO> updateTask(@PathVariable Integer id, @RequestBody TaskDTO taskDTODetails) {
+        TaskDTO updatedTask = taskService.updateTask(id, taskDTODetails);
         return ResponseEntity.ok(updatedTask);
     }
 
     @PatchMapping("/conclude/{id}")
-    public ResponseEntity<Task> concludeTask(@PathVariable Integer id) {
-        Task concludedTask = taskService.concludeTask(id);
+    public ResponseEntity<TaskDTO> concludeTask(@PathVariable Integer id) {
+        TaskDTO concludedTask = taskService.concludeTask(id);
         return ResponseEntity.ok(concludedTask);
     }
 
