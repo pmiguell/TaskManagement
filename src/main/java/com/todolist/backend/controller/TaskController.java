@@ -4,6 +4,8 @@ import com.todolist.backend.model.Task;
 import com.todolist.backend.service.TaskService;
 import com.todolist.backend.utils.Status;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -13,8 +15,12 @@ import java.util.List;
 @RequestMapping("/tasks")
 @CrossOrigin(origins = "http://localhost:5173")
 public class TaskController {
-    @Autowired
     private TaskService taskService;
+
+    @Autowired
+    public TaskController(TaskService taskService) {
+        this.taskService = taskService;
+    }
 
     @GetMapping
     public List<Task> getAllTasks() {
@@ -28,29 +34,30 @@ public class TaskController {
             @RequestParam(required = false) LocalDate deadline,
             @RequestParam(required = false) String description) {
 
-        category = (category != null && category.isEmpty()) ? null : category;
-        description = (description != null && description.isEmpty()) ? null : description;
-
         return taskService.getFilteredTasks(category, status, deadline, description);
     }
 
     @PostMapping
-    public Task createTask(@RequestBody Task task) {
-        return taskService.createTask(task);
+    public ResponseEntity<Task> createTask(@RequestBody Task task) {
+        Task createdTask = taskService.createTask(task);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdTask);
     }
 
     @PutMapping("/{id}")
-    public Task updateTask(@PathVariable Integer id, @RequestBody Task taskDetails) {
-        return taskService.updateTask(id, taskDetails);
+    public ResponseEntity<Task> updateTask(@PathVariable Integer id, @RequestBody Task taskDetails) {
+        Task updatedTask = taskService.updateTask(id, taskDetails);
+        return ResponseEntity.ok(updatedTask);
     }
 
-    @PutMapping("/conclude/{id}")
-    public Task concludeTask(@PathVariable Integer id) {
-        return taskService.concludeTask(id);
+    @PatchMapping("/conclude/{id}")
+    public ResponseEntity<Task> concludeTask(@PathVariable Integer id) {
+        Task concludedTask = taskService.concludeTask(id);
+        return ResponseEntity.ok(concludedTask);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteTask(@PathVariable Integer id) {
+    public ResponseEntity<Void> deleteTask(@PathVariable Integer id) {
         taskService.deleteTask(id);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -13,10 +13,10 @@ import java.util.List;
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Integer> {
     @Query("SELECT t FROM Task t WHERE " +
-            "(:category IS NULL OR t.category = :category) AND " +
+            "(:category IS NULL OR :category = '' OR t.category = :category) AND " +
             "(:status IS NULL OR t.status = :status) AND " +
             "(:deadline IS NULL OR t.deadline = :deadline) AND " +
-            "(:description IS NULL OR LOWER(t.description) LIKE LOWER(CONCAT('%', :description, '%')))")
+            "(:description IS NULL OR :description = '' OR LOWER(t.description) LIKE LOWER(CONCAT('%', :description, '%')))")
     List<Task> findFilteredTasks(@Param("category") String category,
                                  @Param("status") Status status,
                                  @Param("deadline") LocalDate deadline,
