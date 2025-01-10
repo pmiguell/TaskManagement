@@ -1,10 +1,10 @@
 package com.todolist.backend.controller;
 
 import com.todolist.backend.DTO.TaskDTO;
-import com.todolist.backend.model.Task;
 import com.todolist.backend.service.TaskService;
 import com.todolist.backend.utils.Status;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,13 +29,12 @@ public class TaskController {
     }
 
     @GetMapping("/filter")
-    public List<TaskDTO> getFilteredTasks(
+    public List<TaskDTO> filterTasks(
+            @RequestParam(required = false) String description,
             @RequestParam(required = false) String category,
             @RequestParam(required = false) Status status,
-            @RequestParam(required = false) LocalDate deadline,
-            @RequestParam(required = false) String description) {
-
-        return taskService.getFilteredTasks(category, status, deadline, description);
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate deadline) {
+        return taskService.filterTasks(description, category, status, deadline);
     }
 
     @PostMapping
@@ -62,7 +61,7 @@ public class TaskController {
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("")
+    @DeleteMapping
     public ResponseEntity<Void> deleteAllTasks() {
         taskService.deleteAllTasks();
         return ResponseEntity.noContent().build();

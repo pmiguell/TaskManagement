@@ -4,9 +4,11 @@ import com.todolist.backend.DTO.TaskDTO;
 import com.todolist.backend.exception.TaskNotFoundException;
 import com.todolist.backend.model.Task;
 import com.todolist.backend.repository.TaskRepository;
+import com.todolist.backend.specification.TaskSpecifications;
 import com.todolist.backend.utils.Status;
 import com.todolist.backend.utils.TaskUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -28,12 +30,17 @@ public class TaskService {
                 .collect(Collectors.toList());
     }
 
-    public List<TaskDTO> getFilteredTasks(String category, Status status, LocalDate deadline, String description) {
-        return taskRepository.findFilteredTasks(category, status, deadline, description).stream()
+    public List<TaskDTO> filterTasks(String description, String category, Status status, LocalDate deadline) {
+        Specification<Task> spec = Specification
+                .where(TaskSpecifications.hasDescription(description))
+                .and(TaskSpecifications.hasCategory(category))
+                .and(TaskSpecifications.hasStatus(status))
+                .and(TaskSpecifications.hasDeadline(deadline));
+
+        return taskRepository.findAll(spec).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
-
 
     public TaskDTO createTask(TaskDTO taskDTO) {
         Task task = convertToEntity(taskDTO);
