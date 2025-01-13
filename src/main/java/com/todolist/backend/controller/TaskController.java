@@ -24,17 +24,25 @@ public class TaskController {
     }
 
     @GetMapping
-    public List<TaskDTO> getAllTasks() {
-        return taskService.getAllTasks();
+    public ResponseEntity<List<TaskDTO>> getAllTasks() {
+        List<TaskDTO> tasks = taskService.getAllTasks();
+        return ResponseEntity.ok(tasks);
     }
 
     @GetMapping("/filter")
-    public List<TaskDTO> filterTasks(
+    public ResponseEntity<List<TaskDTO>> filterTasks(
             @RequestParam(required = false) String description,
             @RequestParam(required = false) String category,
             @RequestParam(required = false) Status status,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate deadline) {
-        return taskService.filterTasks(description, category, status, deadline);
+        List<TaskDTO> filteredTasks = taskService.filterTasks(description, category, status, deadline);
+        return ResponseEntity.ok(filteredTasks);
+    }
+
+    @GetMapping("/categories")
+    public ResponseEntity<List<String>> getAllCategories() {
+        List<String> categories = taskService.getAllCategories();
+        return ResponseEntity.ok(categories);
     }
 
     @PostMapping

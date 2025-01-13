@@ -30,6 +30,13 @@ public class TaskService {
                 .collect(Collectors.toList());
     }
 
+    public List<String> getAllCategories() {
+        return taskRepository.findAll().stream()
+                .map(Task::getCategory)
+                .distinct()
+                .collect(Collectors.toList());
+    }
+
     public List<TaskDTO> filterTasks(String description, String category, Status status, LocalDate deadline) {
         Specification<Task> spec = Specification
                 .where(TaskSpecifications.hasDescription(description))
