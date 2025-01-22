@@ -3,10 +3,13 @@ package com.todolist.backend.service;
 import com.todolist.backend.DTO.TaskDTO;
 import com.todolist.backend.exception.TaskNotFoundException;
 import com.todolist.backend.model.Task;
+import com.todolist.backend.model.User;
 import com.todolist.backend.repository.TaskRepository;
+import com.todolist.backend.repository.UserRepository;
 import com.todolist.backend.specification.TaskSpecifications;
 import com.todolist.backend.utils.Status;
 import com.todolist.backend.utils.TaskUtils;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -18,47 +21,54 @@ import java.util.stream.Collectors;
 @Service
 public class TaskService {
     private TaskRepository taskRepository;
+    private UserRepository userRepository;
 
     @Autowired
-    public TaskService(TaskRepository taskRepository) {
+    public TaskService(TaskRepository taskRepository, UserRepository userRepository) {
         this.taskRepository = taskRepository;
+        this.userRepository = userRepository;
     }
 
-    public List<TaskDTO> getAllTasks() {
-        return taskRepository.findAll().stream()
+    public List<TaskDTO> getAllTasks(String userId) {
+        return taskRepository.findByUserId(userId).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
-    public List<String> getAllCategories() {
-        return taskRepository.findAll().stream()
+    public List<String> getAllCategories(String userId) {
+        return taskRepository.findByUserId(userId).stream()
                 .map(Task::getCategory)
                 .distinct()
                 .collect(Collectors.toList());
     }
 
-    public List<TaskDTO> filterTasks(String description, String category, Status status, LocalDate deadline) {
+    public List<TaskDTO> filterTasks(String description, String category, Status status, LocalDate deadline, String userId) {
         Specification<Task> spec = Specification
                 .where(TaskSpecifications.hasDescription(description))
                 .and(TaskSpecifications.hasCategory(category))
                 .and(TaskSpecifications.hasStatus(status))
-                .and(TaskSpecifications.hasDeadline(deadline));
+                .and(TaskSpecifications.hasDeadline(deadline))
+                .and(TaskSpecifications.hasUserId(userId));
 
         return taskRepository.findAll(spec).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
-    public TaskDTO createTask(TaskDTO taskDTO) {
+    public TaskDTO createTask(TaskDTO taskDTO, String userId) {
         Task task = convertToEntity(taskDTO);
         task.setStatus(TaskUtils.calculateStatus(task.getDeadline()));
+
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        task.setUser(user);
+
         Task savedTask = taskRepository.save(task);
 
         return convertToDTO(savedTask);
     }
 
-    public TaskDTO updateTask(Integer id, TaskDTO taskDTODetails) {
-        Task existingTask = taskRepository.findById(id).orElseThrow(() -> new TaskNotFoundException("Task not found"));
+    public TaskDTO updateTask(Integer id, TaskDTO taskDTODetails, String userId) {
+        Task existingTask = taskRepository.findByIdAndUserId(id, userId);
 
         existingTask.setDescription(taskDTODetails.getDescription());
         existingTask.setCategory(taskDTODetails.getCategory());
@@ -70,22 +80,34 @@ public class TaskService {
         return convertToDTO(updatedTask);
     }
 
-    public TaskDTO concludeTask(Integer id) {
-        Task existingTask = taskRepository.findById(id).orElseThrow(() -> new TaskNotFoundException("Task not found"));
+    public TaskDTO concludeTask(Integer id, String userId) {
+        Task existingTask = taskRepository.findByIdAndUserId(id, userId);
 
-        existingTask.setStatus(Status.CONCLUIDA);
+        existingTask.setStatus(Status.COMPLETED);
 
         Task concludedTask = taskRepository.save(existingTask);
 
         return convertToDTO(concludedTask);
     }
 
-    public void deleteTask(Integer id) {
-        taskRepository.deleteById(id);
+    public TaskDTO undoConcludeTask(Integer id, String userId) {
+        Task existingTask = taskRepository.findByIdAndUserId(id, userId);
+
+        existingTask.setStatus(TaskUtils.calculateStatus(existingTask.getDeadline()));
+
+        Task undoConcludedTask = taskRepository.save(existingTask);
+
+        return convertToDTO(undoConcludedTask);
     }
 
-    public void deleteAllTasks() {
-        taskRepository.deleteAll();
+    public void deleteTask(Integer id, String userId) {
+        Task task = taskRepository.findByIdAndUserId(id, userId);
+        taskRepository.delete(task);
+    }
+
+    @Transactional
+    public void deleteAllTasks(String userId) {
+        taskRepository.deleteByUserId(userId);
     }
 
     private TaskDTO convertToDTO(Task task) {

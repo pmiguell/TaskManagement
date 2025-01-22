@@ -10,6 +10,7 @@ public class TaskDTO {
     private String category;
     private LocalDate deadline;
     private Status status;
+    private String userId;
 
     public Integer getId() {
         return id;
@@ -49,5 +50,13 @@ public class TaskDTO {
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 }

@@ -8,9 +8,9 @@ public class TaskUtils {
         LocalDate currentDate = LocalDate.now();
 
         if (currentDate.isBefore(deadline)) {
-            return Status.PENDENTE;
+            return Status.PENDING;
         } else {
-            return Status.ATRASADA;
+            return Status.OVERDUE;
         }
     }
 }

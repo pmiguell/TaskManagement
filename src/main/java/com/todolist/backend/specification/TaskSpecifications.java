@@ -30,4 +30,10 @@ public class TaskSpecifications {
                 ? criteriaBuilder.conjunction()
                 : criteriaBuilder.equal(root.get("deadline"), deadline);
     }
+
+    public static Specification<Task> hasUserId(String userId) {
+        return (root, query, criteriaBuilder) -> userId == null || userId.isEmpty()
+                ? criteriaBuilder.conjunction()
+                : criteriaBuilder.equal(root.get("user").get("id"), userId);
+    }
 }
