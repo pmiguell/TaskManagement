@@ -1,16 +1,15 @@
 package com.todolist.backend.service;
 
 import com.todolist.backend.DTO.TaskDTO;
-import com.todolist.backend.exception.TaskNotFoundException;
-import com.todolist.backend.model.Task;
-import com.todolist.backend.model.User;
+import com.todolist.backend.entity.TaskEntity;
+import com.todolist.backend.entity.UserEntity;
 import com.todolist.backend.repository.TaskRepository;
-import com.todolist.backend.repository.UserRepository;
 import com.todolist.backend.specification.TaskSpecifications;
 import com.todolist.backend.utils.Status;
 import com.todolist.backend.utils.TaskUtils;
+import com.todolist.backend.utils.UserUtils;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -19,113 +18,117 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class TaskService {
-    private TaskRepository taskRepository;
-    private UserRepository userRepository;
-
-    @Autowired
-    public TaskService(TaskRepository taskRepository, UserRepository userRepository) {
-        this.taskRepository = taskRepository;
-        this.userRepository = userRepository;
-    }
+    private final TaskRepository taskRepository;
+    private final UserUtils userUtils;
 
     public List<TaskDTO> getAllTasks(String userId) {
-        return taskRepository.findByUserId(userId).stream()
+        UserEntity userEntity = userUtils.getValidUser(userId);
+        return taskRepository.findByUserId(userEntity.getId()).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
     public List<String> getAllCategories(String userId) {
-        return taskRepository.findByUserId(userId).stream()
-                .map(Task::getCategory)
+        UserEntity userEntity = userUtils.getValidUser(userId);
+        return taskRepository.findByUserId(userEntity.getId()).stream()
+                .map(TaskEntity::getCategory)
                 .distinct()
                 .collect(Collectors.toList());
     }
 
+    public TaskDTO createTask(TaskDTO taskDTO, String userId) {
+        TaskEntity taskEntity = convertToEntity(taskDTO);
+        taskEntity.setStatus(TaskUtils.calculateStatus(taskEntity.getDeadline()));
+
+        UserEntity userEntity = userUtils.getValidUser(userId);
+        taskEntity.setUser(userEntity);
+
+        TaskEntity savedTaskEntity = taskRepository.save(taskEntity);
+
+        return convertToDTO(savedTaskEntity);
+    }
+
     public List<TaskDTO> filterTasks(String description, String category, Status status, LocalDate deadline, String userId) {
-        Specification<Task> spec = Specification
+        UserEntity userEntity = userUtils.getValidUser(userId);
+
+        Specification<TaskEntity> spec = Specification
                 .where(TaskSpecifications.hasDescription(description))
                 .and(TaskSpecifications.hasCategory(category))
                 .and(TaskSpecifications.hasStatus(status))
                 .and(TaskSpecifications.hasDeadline(deadline))
-                .and(TaskSpecifications.hasUserId(userId));
+                .and(TaskSpecifications.hasUserId(userEntity.getId()));
 
         return taskRepository.findAll(spec).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
-    public TaskDTO createTask(TaskDTO taskDTO, String userId) {
-        Task task = convertToEntity(taskDTO);
-        task.setStatus(TaskUtils.calculateStatus(task.getDeadline()));
-
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-        task.setUser(user);
-
-        Task savedTask = taskRepository.save(task);
-
-        return convertToDTO(savedTask);
-    }
-
     public TaskDTO updateTask(Integer id, TaskDTO taskDTODetails, String userId) {
-        Task existingTask = taskRepository.findByIdAndUserId(id, userId);
+        UserEntity userEntity = userUtils.getValidUser(userId);
+        TaskEntity existingTaskEntity = taskRepository.findByIdAndUserId(id, userEntity.getId());
 
-        existingTask.setDescription(taskDTODetails.getDescription());
-        existingTask.setCategory(taskDTODetails.getCategory());
-        existingTask.setDeadline(taskDTODetails.getDeadline());
-        existingTask.setStatus(TaskUtils.calculateStatus(taskDTODetails.getDeadline()));
+        existingTaskEntity.setDescription(taskDTODetails.getDescription());
+        existingTaskEntity.setCategory(taskDTODetails.getCategory());
+        existingTaskEntity.setDeadline(taskDTODetails.getDeadline());
+        existingTaskEntity.setStatus(TaskUtils.calculateStatus(taskDTODetails.getDeadline()));
 
-        Task updatedTask = taskRepository.save(existingTask);
+        TaskEntity updatedTaskEntity = taskRepository.save(existingTaskEntity);
 
-        return convertToDTO(updatedTask);
+        return convertToDTO(updatedTaskEntity);
     }
 
     public TaskDTO concludeTask(Integer id, String userId) {
-        Task existingTask = taskRepository.findByIdAndUserId(id, userId);
+        UserEntity userEntity = userUtils.getValidUser(userId);
+        TaskEntity existingTaskEntity = taskRepository.findByIdAndUserId(id, userEntity.getId());
 
-        existingTask.setStatus(Status.COMPLETED);
+        existingTaskEntity.setStatus(Status.COMPLETED);
 
-        Task concludedTask = taskRepository.save(existingTask);
+        TaskEntity concludedTaskEntity = taskRepository.save(existingTaskEntity);
 
-        return convertToDTO(concludedTask);
+        return convertToDTO(concludedTaskEntity);
     }
 
     public TaskDTO undoConcludeTask(Integer id, String userId) {
-        Task existingTask = taskRepository.findByIdAndUserId(id, userId);
+        UserEntity userEntity = userUtils.getValidUser(userId);
+        TaskEntity existingTaskEntity = taskRepository.findByIdAndUserId(id, userEntity.getId());
 
-        existingTask.setStatus(TaskUtils.calculateStatus(existingTask.getDeadline()));
+        existingTaskEntity.setStatus(TaskUtils.calculateStatus(existingTaskEntity.getDeadline()));
 
-        Task undoConcludedTask = taskRepository.save(existingTask);
+        TaskEntity undoConcludedTaskEntity = taskRepository.save(existingTaskEntity);
 
-        return convertToDTO(undoConcludedTask);
+        return convertToDTO(undoConcludedTaskEntity);
     }
 
     public void deleteTask(Integer id, String userId) {
-        Task task = taskRepository.findByIdAndUserId(id, userId);
-        taskRepository.delete(task);
+        UserEntity userEntity = userUtils.getValidUser(userId);
+        TaskEntity taskEntity = taskRepository.findByIdAndUserId(id, userEntity.getId());
+        taskRepository.delete(taskEntity);
     }
 
     @Transactional
     public void deleteAllTasks(String userId) {
-        taskRepository.deleteByUserId(userId);
+        UserEntity userEntity = userUtils.getValidUser(userId);
+        taskRepository.deleteByUserId(userEntity.getId());
     }
 
-    private TaskDTO convertToDTO(Task task) {
+    private TaskDTO convertToDTO(TaskEntity taskEntity) {
         TaskDTO taskDTO = new TaskDTO();
-        taskDTO.setId(task.getId());
-        taskDTO.setDescription(task.getDescription());
-        taskDTO.setCategory(task.getCategory());
-        taskDTO.setDeadline(task.getDeadline());
-        taskDTO.setStatus(task.getStatus());
+        taskDTO.setId(taskEntity.getId());
+        taskDTO.setDescription(taskEntity.getDescription());
+        taskDTO.setCategory(taskEntity.getCategory());
+        taskDTO.setDeadline(taskEntity.getDeadline());
+        taskDTO.setStatus(taskEntity.getStatus());
         return taskDTO;
     }
 
-    private Task convertToEntity(TaskDTO taskDTO) {
-        Task task = new Task();
-        task.setDescription(taskDTO.getDescription());
-        task.setCategory(taskDTO.getCategory());
-        task.setDeadline(taskDTO.getDeadline());
-        task.setStatus(taskDTO.getStatus());
-        return task;
+    private TaskEntity convertToEntity(TaskDTO taskDTO) {
+        TaskEntity taskEntity = new TaskEntity();
+        taskEntity.setDescription(taskDTO.getDescription());
+        taskEntity.setCategory(taskDTO.getCategory());
+        taskEntity.setDeadline(taskDTO.getDeadline());
+        taskEntity.setStatus(taskDTO.getStatus());
+        return taskEntity;
     }
 }
