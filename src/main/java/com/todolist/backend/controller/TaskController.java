@@ -23,7 +23,7 @@ public class TaskController {
 
     private final TaskService taskService;
 
-    @Operation(summary = "Gets all tasks from the authenticated user")
+    @Operation(summary = "Gets all tasks of the authenticated user")
     @GetMapping
     public ResponseEntity<List<TaskDTO>> getAllTasks(Authentication authentication) {
         String userId = ((UserEntity) authentication.getPrincipal()).getId();
@@ -87,7 +87,7 @@ public class TaskController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Deletes all tasks for the authenticated user")
+    @Operation(summary = "Deletes all tasks of the authenticated user")
     @DeleteMapping
     public ResponseEntity<Void> deleteAllTasks(Authentication authentication) {
         String userId = ((UserEntity) authentication.getPrincipal()).getId();
