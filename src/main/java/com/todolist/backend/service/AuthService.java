@@ -5,6 +5,9 @@ import com.todolist.backend.DTO.LoginResponseDTO;
 import com.todolist.backend.DTO.RegisterRequestDTO;
 import com.todolist.backend.DTO.RegisterResponseDTO;
 import com.todolist.backend.entity.UserEntity;
+import com.todolist.backend.exception.InvalidCredentialsException;
+import com.todolist.backend.exception.UserAlreadyExistsException;
+import com.todolist.backend.exception.UserNotFoundException;
 import com.todolist.backend.repository.UserRepository;
 import com.todolist.backend.security.TokenService;
 import lombok.RequiredArgsConstructor;
@@ -20,19 +23,19 @@ public class AuthService {
 
     public LoginResponseDTO login(LoginRequestDTO request) {
         UserEntity userEntity = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         if (passwordEncoder.matches(request.password(), userEntity.getPassword())) {
             String token = tokenService.generateToken(userEntity);
             return new LoginResponseDTO(userEntity.getEmail(), token);
         }
 
-        throw new RuntimeException("Invalid credentials");
+        throw new InvalidCredentialsException("Invalid credentials");
     }
 
     public RegisterResponseDTO register(RegisterRequestDTO request) {
         if (userRepository.findByEmail(request.email()).isPresent()) {
-            throw new RuntimeException("User already exists");
+            throw new UserAlreadyExistsException("User already exists");
         }
 
         UserEntity userEntity = UserEntity.builder()
