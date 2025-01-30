@@ -3,23 +3,22 @@ package com.todolist.backend.controller;
 import com.todolist.backend.DTO.TaskDTO;
 import com.todolist.backend.entity.UserEntity;
 import com.todolist.backend.service.TaskService;
-import com.todolist.backend.utils.Status;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
+import com.todolist.backend.utils.TaskFilter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @RestController
 @RequestMapping("/tasks")
 @CrossOrigin(origins = "http://localhost:5173")
+@RequiredArgsConstructor
 public class TaskController {
-    @Autowired
-    private TaskService taskService;
+
+    private final TaskService taskService;
 
     @GetMapping
     public ResponseEntity<List<TaskDTO>> getAllTasks(Authentication authentication) {
@@ -29,14 +28,9 @@ public class TaskController {
     }
 
     @GetMapping("/filter")
-    public ResponseEntity<List<TaskDTO>> filterTasks(
-            @RequestParam(required = false) String description,
-            @RequestParam(required = false) String category,
-            @RequestParam(required = false) Status status,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate deadline,
-            Authentication authentication) {
+    public ResponseEntity<List<TaskDTO>> filterTasks(TaskFilter taskFilter, Authentication authentication) {
         String userId = ((UserEntity) authentication.getPrincipal()).getId();
-        List<TaskDTO> filteredTasks = taskService.filterTasks(description, category, status, deadline, userId);
+        List<TaskDTO> filteredTasks = taskService.filterTasks(taskFilter, userId);
         return ResponseEntity.ok(filteredTasks);
     }
 

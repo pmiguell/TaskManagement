@@ -1,6 +1,5 @@
-package com.todolist.backend.DTO;
+package com.todolist.backend.utils;
 
-import com.todolist.backend.utils.Status;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,10 +11,9 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TaskDTO {
-    private Integer id;
+public class TaskFilter {
     private String description;
     private String category;
-    private LocalDate deadline;
     private Status status;
+    private LocalDate deadline;
 }

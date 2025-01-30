@@ -6,6 +6,7 @@ import com.todolist.backend.entity.UserEntity;
 import com.todolist.backend.repository.TaskRepository;
 import com.todolist.backend.specification.TaskSpecifications;
 import com.todolist.backend.utils.Status;
+import com.todolist.backend.utils.TaskFilter;
 import com.todolist.backend.utils.TaskUtils;
 import com.todolist.backend.utils.UserUtils;
 import jakarta.transaction.Transactional;
@@ -13,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -50,14 +50,14 @@ public class TaskService {
         return convertToDTO(savedTaskEntity);
     }
 
-    public List<TaskDTO> filterTasks(String description, String category, Status status, LocalDate deadline, String userId) {
+    public List<TaskDTO> filterTasks(TaskFilter taskFilter, String userId) {
         UserEntity userEntity = userUtils.getValidUser(userId);
 
         Specification<TaskEntity> spec = Specification
-                .where(TaskSpecifications.hasDescription(description))
-                .and(TaskSpecifications.hasCategory(category))
-                .and(TaskSpecifications.hasStatus(status))
-                .and(TaskSpecifications.hasDeadline(deadline))
+                .where(TaskSpecifications.hasDescription(taskFilter.getDescription()))
+                .and(TaskSpecifications.hasCategory(taskFilter.getCategory()))
+                .and(TaskSpecifications.hasStatus(taskFilter.getStatus()))
+                .and(TaskSpecifications.hasDeadline(taskFilter.getDeadline()))
                 .and(TaskSpecifications.hasUserId(userEntity.getId()));
 
         return taskRepository.findAll(spec).stream()
@@ -68,6 +68,7 @@ public class TaskService {
     public TaskDTO updateTask(Integer id, TaskDTO taskDTODetails, String userId) {
         UserEntity userEntity = userUtils.getValidUser(userId);
         TaskEntity existingTaskEntity = taskRepository.findByIdAndUserId(id, userEntity.getId());
+        UserUtils.validateTaskOwnership(userId, existingTaskEntity);
 
         existingTaskEntity.setDescription(taskDTODetails.getDescription());
         existingTaskEntity.setCategory(taskDTODetails.getCategory());
@@ -82,6 +83,7 @@ public class TaskService {
     public TaskDTO concludeTask(Integer id, String userId) {
         UserEntity userEntity = userUtils.getValidUser(userId);
         TaskEntity existingTaskEntity = taskRepository.findByIdAndUserId(id, userEntity.getId());
+        UserUtils.validateTaskOwnership(userId, existingTaskEntity);
 
         existingTaskEntity.setStatus(Status.COMPLETED);
 
@@ -93,6 +95,7 @@ public class TaskService {
     public TaskDTO undoConcludeTask(Integer id, String userId) {
         UserEntity userEntity = userUtils.getValidUser(userId);
         TaskEntity existingTaskEntity = taskRepository.findByIdAndUserId(id, userEntity.getId());
+        UserUtils.validateTaskOwnership(userId, existingTaskEntity);
 
         existingTaskEntity.setStatus(TaskUtils.calculateStatus(existingTaskEntity.getDeadline()));
 
@@ -104,6 +107,7 @@ public class TaskService {
     public void deleteTask(Integer id, String userId) {
         UserEntity userEntity = userUtils.getValidUser(userId);
         TaskEntity taskEntity = taskRepository.findByIdAndUserId(id, userEntity.getId());
+        UserUtils.validateTaskOwnership(userId, taskEntity);
         taskRepository.delete(taskEntity);
     }
 
