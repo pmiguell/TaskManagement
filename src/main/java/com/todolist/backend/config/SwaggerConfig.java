@@ -18,7 +18,7 @@ public class SwaggerConfig {
                         .version("1.0.0")
                         .description("API for managing tasks in a ToDo List application.")
                         .contact(new Contact()
-                                .name("PedrO Miguel")
+                                .name("Pedro Miguel")
                                 .email("p_miguel2004@hotmail.com")
                                 .url("https://pmiguell.github.io/portfolio/"))
                         .license(new License()
