@@ -45,9 +45,7 @@ public class AuthService {
                 .build();
 
         userRepository.save(userEntity);
-
-        String token = tokenService.generateToken(userEntity);
-
+        
         return new RegisterResponseDTO(userEntity.getEmail());
     }
 }
