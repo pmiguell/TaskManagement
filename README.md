@@ -1,10 +1,10 @@
-# 📌 Gerenciador de Tarefas - API REST com Spring Boot  
+# 📌 Task Manager - REST API with Spring Boot  
 
-Este é um backend para um **Gerenciador de Tarefas**, desenvolvido com **Spring Boot**, **Spring Security (JWT)** e **PostgreSQL**. Ele permite que os usuários criem contas, façam login e gerenciem suas tarefas de forma segura.  
+This is a **Task Manager** backend developed with **Spring Boot**, **Spring Security (JWT)**, and **PostgreSQL**. It allows users to create accounts, log in, and manage their tasks securely.  
 
 ---
 
-## 🚀 Tecnologias Utilizadas  
+## 🚀 Technologies Used  
 - **Java 17**  
 - **Spring Boot 3**  
 - **Spring Security & JWT**  
@@ -15,33 +15,33 @@ Este é um backend para um **Gerenciador de Tarefas**, desenvolvido com **Spring
 
 ---
 
-## 📌 Funcionalidades  
-✅ Cadastro e autenticação de usuários (JWT)  
-✅ CRUD de tarefas (Criar, Listar, Atualizar, Deletar)  
-✅ Proteção de endpoints com autenticação  
-✅ Filtragem de tarefas por status (pendente/concluída)  
-✅ Documentação da API com Swagger  
+## 📌 Features  
+✅ User registration and authentication (JWT)  
+✅ Task CRUD operations (Create, Read, Update, Delete)  
+✅ Secure endpoints with authentication  
+✅ Task filtering by status (pending/completed/in progress)  
+✅ API documentation with Swagger  
 
 ---
 
-## ⚙️ Como Rodar o Projeto Localmente  
+## ⚙️ How to Run the Project Locally  
 
-### 1️⃣ Pré-requisitos  
-- Ter **Java 17** instalado  
-- Ter **PostgreSQL** instalado e rodando  
+### 1️⃣ Prerequisites  
+- **Java 17** installed  
+- **PostgreSQL** installed and running  
 
-### 2️⃣ Configurar o Banco de Dados  
-Crie um banco de dados PostgreSQL chamado `gerenciador_tarefas` e atualize o `application.properties`:  
+### 2️⃣ Configure the Database  
+Create a PostgreSQL database named `task_manager` and update the `application.properties` file:  
 
 ```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/gerenciador_tarefas
-spring.datasource.username=seu_usuario
-spring.datasource.password=sua_senha
+spring.datasource.url=jdbc:postgresql://localhost:5432/task_manager
+spring.datasource.username=your_username
+spring.datasource.password=your_password
 spring.jpa.hibernate.ddl-auto=update
 ```
 
-### 3️⃣ Rodar o Projeto  
-Clone o repositório e execute os seguintes comandos:  
+### 3️⃣ Run the Project
+Clone the repository and execute the following commands: 
 
 ```bash
 git clone https://github.com/pmiguell/gerenciador-tarefas.git
@@ -49,38 +49,38 @@ cd gerenciador-tarefas
 mvn spring-boot:run
 ```
 
-A API estará disponível em http://localhost:8080.
+The API will be available at http://localhost:8080.
 
-## 🛠 Endpoints da API  
+## 🛠 API Endpoints
 
-### 📌 Autenticação  
+### 📌 Authentication 
 
 | Método | Endpoint        | Descrição              | Autenticação |
 |--------|----------------|------------------------|--------------|
-| POST   | `/auth/register` | Cadastrar um novo usuário | ❌ |
-| POST   | `/auth/login`    | Login (gera JWT)        | ❌ |
+| POST   | `/auth/register` | Register a new user | ❌ |
+| POST   | `/auth/login`    | Login (generates JWT)        | ❌ |
 
 ### 📌 Tarefas  
 
 | Método | Endpoint                 | Descrição                                    | Autenticação |
 |--------|---------------------------|----------------------------------------------|--------------|
-| GET    | `/tasks`                  | Obtém todas as tarefas do usuário autenticado | ✅ |
-| POST   | `/tasks`                  | Cria uma nova tarefa                         | ✅ |
-| GET    | `/tasks/{id}`             | Obtém uma tarefa específica por ID           | ✅ |
-| PUT    | `/tasks/{id}`             | Atualiza uma tarefa existente                | ✅ |
-| DELETE | `/tasks/{id}`             | Deleta uma tarefa por ID                     | ✅ |
-| DELETE | `/tasks`                  | Deleta todas as tarefas do usuário autenticado | ✅ |
-| PATCH  | `/tasks/conclude/{id}`    | Marca uma tarefa como **CONCLUÍDA**          | ✅ |
-| PATCH  | `/tasks/undo-conclude/{id}` | Desfaz a conclusão de uma tarefa             | ✅ |
-| GET    | `/tasks/filter`           | Filtra tarefas com base em critérios         | ✅ |
-| GET    | `/tasks/categories`       | Obtém todas as categorias de tarefas do usuário | ✅ |
+| GET    | `/tasks`                  | Get all tasks of the authenticated user | ✅ |
+| POST   | `/tasks`                  | Create a new task                         | ✅ |
+| GET    | `/tasks/{id}`             | Get a specific task by ID           | ✅ |
+| PUT    | `/tasks/{id}`             | 	Update an existing task                | ✅ |
+| DELETE | `/tasks/{id}`             | 	Delete a task by ID                     | ✅ |
+| DELETE | `/tasks`                  | Delete all tasks of the authenticated user | ✅ |
+| PATCH  | `/tasks/conclude/{id}`    | Mark a task as **COMPLETED**          | ✅ |
+| PATCH  | `/tasks/undo-conclude/{id}` | Undo task completion             | ✅ |
+| GET    | `/tasks/filter`           | Filter tasks based on criteria         | ✅ |
+| GET    | `/tasks/categories`       | 	Get all user task categories | ✅ |
 
-✅ **Autenticação:** Todos os endpoints de **tarefas** exigem um token JWT no cabeçalho:  
+✅ **Authentication:** All task endpoints require a JWT token in the request header:  
 ```http
-Authorization: Bearer <seu_token>
+Authorization: Bearer <your_token>
 ```
 
-## 📖 Documentação da API  
+## 📖 API Documentation
 
-Após iniciar a aplicação localmente, a documentação completa da API pode ser acessada pelo **Swagger UI** no seguinte endereço:  
+Once the application is running locally, the full API documentation can be accessed through Swagger UI at:  
 🔗 [`http://localhost:8080/swagger-ui.html`](http://localhost:8080/swagger-ui.html)  
