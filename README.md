@@ -44,8 +44,8 @@ spring.jpa.hibernate.ddl-auto=update
 Clone the repository and execute the following commands: 
 
 ```bash
-git clone https://github.com/pmiguell/gerenciador-tarefas.git
-cd gerenciador-tarefas
+git clone https://github.com/pmiguell/TaskManagement.git
+cd TaskManagement
 mvn spring-boot:run
 ```
 
