@@ -55,14 +55,14 @@ The API will be available at http://localhost:8080.
 
 ### 📌 Authentication 
 
-| Método | Endpoint        | Descrição              | Autenticação |
+| Method | Endpoint        | Description              | Authentication |
 |--------|----------------|------------------------|--------------|
 | POST   | `/auth/register` | Register a new user | ❌ |
 | POST   | `/auth/login`    | Login (generates JWT)        | ❌ |
 
 ### 📌 Tarefas  
 
-| Método | Endpoint                 | Descrição                                    | Autenticação |
+| Method | Endpoint                 | Description                                    | Authentication |
 |--------|---------------------------|----------------------------------------------|--------------|
 | GET    | `/tasks`                  | Get all tasks of the authenticated user | ✅ |
 | POST   | `/tasks`                  | Create a new task                         | ✅ |
